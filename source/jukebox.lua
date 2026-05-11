@@ -4,7 +4,6 @@ local gfx <const> = pd.graphics
 local smp <const> = pd.sound.sampleplayer
 local text <const> = getLocalizedText
 local floor <const> = math.floor
-local random <const> = math.random
 
 class('jukebox').extends(gfx.sprite) -- Create the scene's class
 function jukebox:init(...)
@@ -30,7 +29,6 @@ function jukebox:init(...)
 				end
 			end)
 			menu:addMenuItem(text('goback'), function()
-				playsound(assets.sfx_back)
 				vars.anim_ship_x:resetnew(700, vars.anim_ship_x.value, 500, pd.easingFunctions.inBack)
 				pd.timer.performAfterDelay(400, function()
 					scenemanager:transitionscene(title, false, 'arcade')
@@ -56,8 +54,6 @@ function jukebox:init(...)
 	}
 
 	vars = {
-		anim_stars_small_x = pd.timer.new(4000, 0, -399),
-		anim_stars_large_x = pd.timer.new(2500, 0, -399),
 		anim_ship_x = pd.timer.new(1700, -100, 200, pd.easingFunctions.outCubic),
 		anim_ship = pd.timer.new(400, 1, 4.99),
 		tunes = {'arcade1', 'arcade2', 'arcade3', 'title', 'zen1', 'zen2'},
@@ -86,20 +82,19 @@ function jukebox:init(...)
 		pd.inputHandlers.push(vars.jukeboxHandlers)
 	end)
 
-	vars.anim_stars_small_x.repeats = true
-	vars.anim_stars_large_x.repeats = true
 	vars.anim_ship.repeats = true
 	vars.anim_ship_x.discardOnCompletion = false
 	vars.anim_text_y.discardOnCompletion = false
 
 	gfx.sprite.setBackgroundDrawingCallback(function(x, y, width, height)
-		assets.stars_small:draw(vars.anim_stars_small_x.value, 0)
-		assets.stars_large:draw(vars.anim_stars_large_x.value, 0)
+		local counter = save.playtime
+		assets.stars_small:draw(-(counter % 133) * 3, 0)
+		assets.stars_large:draw(-(counter % 83) * 4.8, 0)
 		gfx.setDitherPattern(0.25, gfx.image.kDitherTypeBayer2x2)
 		gfx.fillRect(0, 0, 400, 240)
 		assets.ship[floor(vars.anim_ship.value)]:drawAnchored(vars.anim_ship_x.value, 120, 0.5, 0.5)
 		gfx.setImageDrawMode(gfx.kDrawModeFillWhite)
-		if save.music and vars.rand then
+		if (save.music > 0) and vars.rand ~= nil then
 			assets.full_circle:drawText(text('music_' .. vars.tunes[vars.rand]), 10, 205 + vars.anim_text_y.value)
 		end
 		assets.half_circle:drawText(text('back'), 10, 220 + vars.anim_text_y.value)
@@ -114,7 +109,7 @@ function jukebox:init(...)
 end
 
 function jukebox:shuffle()
-	vars.rand = random(1, vars.num)
+	vars.rand = randInt(1, vars.num)
 	newmusic('audio/music/' .. vars.tunes[vars.rand])
 	if music ~= nil then
 		music:setFinishCallback(function()

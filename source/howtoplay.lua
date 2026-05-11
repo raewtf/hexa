@@ -33,10 +33,6 @@ function howtoplay:init(...)
 	}
 
 	vars = {
-		anim_stars_small_x = pd.timer.new(4000, 0, -399),
-		anim_stars_small_y = pd.timer.new(2750, 0, -239),
-		anim_stars_large_x = pd.timer.new(2500, 0, -399),
-		anim_stars_large_y = pd.timer.new(1250, 0, -239),
 		page = 1,
 	}
 	vars.howtoplayHandlers = {
@@ -69,14 +65,10 @@ function howtoplay:init(...)
 		pd.inputHandlers.push(vars.howtoplayHandlers)
 	end)
 
-	vars.anim_stars_small_x.repeats = true
-	vars.anim_stars_small_y.repeats = true
-	vars.anim_stars_large_x.repeats = true
-	vars.anim_stars_large_y.repeats = true
-
 	gfx.sprite.setBackgroundDrawingCallback(function(x, y, width, height)
-		assets.stars_small:draw(vars.anim_stars_small_x.value, vars.anim_stars_small_y.value)
-		assets.stars_large:draw(vars.anim_stars_large_x.value, vars.anim_stars_large_y.value)
+		local counter = save.playtime
+		assets.stars_small:draw(-(counter % 133) * 3, -(counter % 97) * 2.45)
+		assets.stars_large:draw(-(counter % 83) * 4.8, -(counter % 42) * 5.7)
 		gfx.setDitherPattern(0.25, gfx.image.kDitherTypeBayer2x2)
 		gfx.fillRect(0, 0, 400, 240)
 		gfx.setImageDrawMode(gfx.kDrawModeFillWhite)
@@ -84,7 +76,7 @@ function howtoplay:init(...)
 		assets.half_circle:drawText(text('page') .. ' ' .. text('back'), 10, 220)
 		assets.half_circle:drawTextAligned(vars.page .. '/7', 390, 220, kTextAlignment.right)
 		gfx.setImageDrawMode(gfx.kDrawModeCopy)
-		assets.manual[vars.page]:draw(220, 40)
+		assets.manual[vars.page]:draw(225, 40)
 	end)
 
 	self:add()

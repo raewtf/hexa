@@ -31,10 +31,6 @@ function statistics:init(...)
 	}
 
 	vars = {
-		anim_stars_small_x = pd.timer.new(4000, 0, -399),
-		anim_stars_small_y = pd.timer.new(2750, 0, -239),
-		anim_stars_large_x = pd.timer.new(2500, 0, -399),
-		anim_stars_large_y = pd.timer.new(1250, 0, -239),
 	}
 	vars.statisticsHandlers = {
 		BButtonDown = function()
@@ -46,14 +42,10 @@ function statistics:init(...)
 		pd.inputHandlers.push(vars.statisticsHandlers)
 	end)
 
-	vars.anim_stars_small_x.repeats = true
-	vars.anim_stars_small_y.repeats = true
-	vars.anim_stars_large_x.repeats = true
-	vars.anim_stars_large_y.repeats = true
-
 	gfx.sprite.setBackgroundDrawingCallback(function(x, y, width, height)
-		assets.stars_small:draw(vars.anim_stars_small_x.value, vars.anim_stars_small_y.value)
-		assets.stars_large:draw(vars.anim_stars_large_x.value, vars.anim_stars_large_y.value)
+		local counter = save.playtime
+		assets.stars_small:draw(-(counter % 133) * 3, -(counter % 97) * 2.45)
+		assets.stars_large:draw(-(counter % 83) * 4.8, -(counter % 42) * 5.7)
 		gfx.setDitherPattern(0.25, gfx.image.kDitherTypeBayer2x2)
 		gfx.fillRect(0, 0, 400, 240)
 		gfx.setImageDrawMode(gfx.kDrawModeFillWhite)
@@ -74,7 +66,11 @@ function statistics:init(...)
 
 		assets.full_circle:drawText(commalize(save.swaps), 250, 5)
 		assets.full_circle:drawText(commalize(save.hexas), 250, 20)
-		assets.full_circle:drawText(string.format("%.2f", save.swaps / save.hexas) .. ':1', 250, 35)
+		if save.swaps > 0 and save.hexas > 0 then
+			assets.full_circle:drawText(string.format("%.2f", save.swaps / save.hexas) .. ':1', 250, 35)
+		else
+			assets.full_circle:drawText(text('na'), 250, 35)
+		end
 		assets.full_circle:drawText(commalize(save.score), 250, 50)
 		assets.full_circle:drawText(commalize(save.hard_score), 250, 65)
 		local playhours, playmins, playsecs = timecalchour(save.playtime)

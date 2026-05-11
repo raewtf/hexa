@@ -10,7 +10,6 @@ local tris_y <const> = {70, 70, 70, 70, 70, 120, 120, 120, 120, 120, 120, 120, 1
 local tris_flip <const> = {true, false, true, false, true, true, false, true, false, true, false, true, false, true, false, true, false, true, false}
 local floor <const> = math.floor
 local flash <const> = pd.getReduceFlashing()
-local random <const> = math.random
 
 class('mission_command').extends(gfx.sprite) -- Create the scene's class
 function mission_command:init(...)
@@ -23,20 +22,12 @@ function mission_command:init(...)
 		pauseimage()
 		menu:removeAllMenuItems()
 		if not scenemanager.transitioning then
-			if vars.mode == 'start' then
+			if vars.mode == 'start' and not pd.keyboard.isVisible() then
 				menu:addMenuItem(text('goback'), function()
 					scenemanager:transitionscene(missions, vars.custom)
 					fademusic()
 				end)
 			elseif vars.mode == 'edit' then
-				menu:addMenuItem(text('goback'), function()
-					vars.mode = 'start'
-					pd.inputHandlers.pop()
-					pd.inputHandlers.push(vars.mission_command_startHandlers)
-					vars.scroll_x_target = 400
-					gfx.sprite.setAlwaysRedraw(false)
-					sprites.error.x_target = -355
-				end)
 				if mission_command:check_validity() then
 					menu:addMenuItem(text('export'), function()
 						vars.mode = 'save'
@@ -46,7 +37,15 @@ function mission_command:init(...)
 						gfx.sprite.setAlwaysRedraw(false)
 					end)
 				end
-			elseif vars.mode == 'save' then
+				menu:addMenuItem(text('goback'), function()
+					vars.mode = 'start'
+					pd.inputHandlers.pop()
+					pd.inputHandlers.push(vars.mission_command_startHandlers)
+					vars.scroll_x_target = 400
+					gfx.sprite.setAlwaysRedraw(false)
+					sprites.error.x_target = -355
+				end)
+			elseif vars.mode == 'save' and not pd.keyboard.isVisible() then
 				menu:addMenuItem(text('goback'), function()
 					vars.mode = 'edit'
 					pd.inputHandlers.pop()
@@ -72,7 +71,7 @@ function mission_command:init(...)
 		ui = gfx.image.new('images/ui_create'),
 		modal = gfx.image.new('images/modal_small'),
 		x = gfx.image.new('images/x'),
-		export_complete = gfx.image.new('images/export_complete_' .. tostring(save.lang)),
+		export_complete = gfx.image.new('images/export_complete_' .. checklanguage()),
 		powerup_double_up = gfx.imagetable.new('images/powerup_double_up'),
 		powerup_double_down = gfx.imagetable.new('images/powerup_double_down'),
 		powerup_bomb_up = gfx.imagetable.new('images/powerup_bomb_up'),
@@ -216,7 +215,7 @@ function mission_command:init(...)
 			elseif vars.start_selections[vars.start_selection] == 'start' then
 				vars.tris = {}
 				if vars.mission_types[vars.mission_type] == 'time' then
-					math.randomseed(vars.seed)
+					setRandomSeed(vars.seed)
 					local newcolor
 					local newpowerup
 					for i = 1, 19 do
@@ -671,9 +670,9 @@ function mission_command:init(...)
 		assets.white:draw(400 + x, 0)
 		assets.white:draw(800 + x, 0)
 		gfx.setLineWidth(2)
-		assets.full_circle:drawText(text('mission_command'), 10 + x, 10)
 		gfx.setDitherPattern(0.75, gfx.image.kDitherTypeBayer2x2)
 		gfx.fillRect(0 + x, 0, 1200, 33)
+		assets.full_circle_outline:drawText(text('mission_command'), 10 + x, 8)
 		gfx.setColor(gfx.kColorBlack)
 		gfx.drawLine(0 + x, 33, 1200, 33)
 
@@ -695,7 +694,7 @@ function mission_command:init(...)
 		assets.full_circle:drawText(text('number_seed'), 50 + x, 153)
 		assets.half_circle:drawText('(' .. text('command_time') .. ')', 50 + x, 167)
 		gfx.drawRect(195 + x, 157, 155, 20)
-		assets.full_circle:drawTextAligned(tonumber(vars.seed_string), 273 + x, 160, kTextAlignment.center)
+		assets.full_circle:drawTextAligned(vars.seed_string or '0', 273 + x, 160, kTextAlignment.center)
 
 		if vars.start_selection == 1 then
 			assets.mcsel:draw(0 + x, 46)
@@ -737,13 +736,13 @@ function mission_command:init(...)
 		gfx.setLineWidth(3)
 
 		if vars.mission_types[vars.mission_type] == 'picture' then
-			if sprites.error.x < -200 then assets.full_circle:drawText(text('create_picture'), 410 + x, 10) end
+			if sprites.error.x < -200 then assets.full_circle_outline:drawText(text('create_picture'), 410 + x, 8) end
 			assets.half_circle:drawText(text('move') .. ' ' .. text('select') .. ' ' .. text('menu_save'), 410 + x, 220)
 		elseif vars.mission_types[vars.mission_type] == 'time' then
-			if sprites.error.x < -200 then assets.full_circle:drawText(text('review_seed'), 410 + x, 10) end
+			if sprites.error.x < -200 then assets.full_circle_outline:drawText(text('review_seed'), 410 + x, 8) end
 			assets.half_circle:drawText(text('menu_save'), 410 + x, 220)
 		else
-			if sprites.error.x < -200 then assets.full_circle:drawText(text('create_start'), 410 + x, 10) end
+			if sprites.error.x < -200 then assets.full_circle_outline:drawText(text('create_start'), 410 + x, 8) end
 			assets.half_circle:drawText(text('move') .. ' ' .. text('select') .. ' ' .. text('menu_save'), 410 + x, 220)
 		end
 
@@ -769,7 +768,7 @@ function mission_command:init(...)
 
 		gfx.setLineWidth(2)
 
-		assets.full_circle:drawText(text('export_puzzle'), 810 + x, 10)
+		assets.full_circle_outline:drawText(text('export_puzzle'), 810 + x, 8)
 
 		assets.full_circle:drawText(text('mission_type'), 850 + x, 50)
 		assets.full_circle:drawTextAligned(text('command_' .. vars.mission_types[vars.mission_type]), 1150 + x, 50, kTextAlignment.right)
@@ -876,16 +875,14 @@ function mission_command:init(...)
 	end
 
 	pd.keyboard.textChangedCallback = function()
+		if vars.seed_string == nil then vars.seed_string = '0' end
 		if vars.keyboard == 'seed' then
-			if pd.keyboard.text == '' then
-				pd.keyboard.text = '0'
-				vars.seed_string = '0'
-			end
 			if pd.keyboard.text ~= tonumber(pd.keyboard.text) then
-				vars.seed_string = pd.keyboard.text:gsub("%D+", ""):sub(1, 10)
+				vars.seed_string = tonumber(pd.keyboard.text:gsub("%D+", ""):sub(1, 9))
 			else
-				vars.seed_string = pd.keyboard.text
+				vars.seed_string = tonumber(pd.keyboard.text)
 			end
+			pd.keyboard.text = tostring(vars.seed_string)
 		elseif vars.keyboard == 'picture' then
 			vars.picture_name = string.sub(pd.keyboard.text, 1, 10)
 			pd.keyboard.text = vars.picture_name
@@ -1128,13 +1125,13 @@ function mission_command:init(...)
 		--gfx.setColor(gfx.kColorBlack)
 		--gfx.setLineWidth(3)
 		assets.error:draw(5, 3)
-		assets.full_circle_outline:drawText('Can\'t clear the mission in this state!', 36, 8)
+		assets.full_circle_outline:drawText(text('command_error'), 36, 8)
 	end
 
 	sprites.selector = classes.selector()
 	sprites.error = classes.error()
 
-	newmusic('audio/music/zen' .. math.random(1, 2), true)
+	newmusic('audio/music/zen' .. randInt(1, 2), true)
 	self:add()
 end
 
@@ -1190,8 +1187,8 @@ function mission_command:tri(x, y, up, color, powerup)
 end
 
 function mission_command:randomizetri()
-	local randomcolor = random(1, 3)
-	local randompowerup = random(1, 50)
+	local randomcolor = randInt(1, 3)
+	local randompowerup = randInt(1, 50)
 	local color
 	local powerup
 	if randomcolor == 1 then
@@ -1248,16 +1245,16 @@ function mission_command:save()
 	pd.datastore.write(vars.export, 'missions/' .. tostring(epoch))
 	save.exported_mission = true
 	vars.puzzle_exported = true
+	updatecheevos()
 	pd.inputHandlers.pop()
 	pd.inputHandlers.push(vars.mission_command_doneHandlers)
 	save.author_name = vars.author_name
-	updatecheevos()
 end
 
 -- Shuffly code from https://gist.github.com/Uradamus/10323382
 function shuffle(tbl)
   for i = #tbl, 2, -1 do
-	local j = math.random(i)
+	local j = randInt(1, i)
 	tbl[i], tbl[j] = tbl[j], tbl[i]
   end
   return tbl

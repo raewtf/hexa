@@ -37,10 +37,6 @@ function options:init(...)
 	}
 
 	vars = {
-		anim_stars_small_x = pd.timer.new(4000, 0, -399),
-		anim_stars_small_y = pd.timer.new(2750, 0, -239),
-		anim_stars_large_x = pd.timer.new(2500, 0, -399),
-		anim_stars_large_y = pd.timer.new(1250, 0, -239),
 		anim_fg_hexa = pd.timer.new(3000, 0, 7, pd.easingFunctions.inOutSine),
 		selections = {'music', 'sfx', 'lang', 'flip', 'crank', 'skipfanfare', 'hardmode', 'reset'},
 		selection = 0,
@@ -113,10 +109,14 @@ function options:init(...)
 				end
 				playsound(assets.sfx_select)
 			elseif vars.selections[vars.selection] == "lang" then
-				if save.lang == "en" then
-					save.lang = "fr"
+				if save.lang == "system" then
+					save.lang = "jp"
+				elseif save.lang == "en" then
+					save.lang = "system"
 				elseif save.lang == "fr" then
 					save.lang = "en"
+				elseif save.lang == "jp" then
+					save.lang = "fr"
 				end
 				playsound(assets.sfx_select)
 			elseif vars.selections[vars.selection] == "flip" then
@@ -167,10 +167,14 @@ function options:init(...)
 				end
 				playsound(assets.sfx_select)
 			elseif vars.selections[vars.selection] == "lang" then
-				if save.lang == "en" then
+				if save.lang == "system" then
+					save.lang = "en"
+				elseif save.lang == "en" then
 					save.lang = "fr"
 				elseif save.lang == "fr" then
-					save.lang = "en"
+					save.lang = "jp"
+				elseif save.lang == "jp" then
+					save.lang = "system"
 				end
 				playsound(assets.sfx_select)
 			elseif vars.selections[vars.selection] == "flip" then
@@ -220,19 +224,27 @@ function options:init(...)
 				else
 					fademusic(1)
 				end
+				playsound(assets.sfx_select)
 			elseif vars.selections[vars.selection] == "sfx" then
 				save.sfx += 1
 				if save.sfx > 5 then
 					save.sfx = 0
 				end
+				playsound(assets.sfx_select)
 			elseif vars.selections[vars.selection] == "lang" then
-				if save.lang == "en" then
+				if save.lang == "system" then
+					save.lang = "en"
+				elseif save.lang == "en" then
 					save.lang = "fr"
 				elseif save.lang == "fr" then
-					save.lang = "en"
+					save.lang = "jp"
+				elseif save.lang == "jp" then
+					save.lang = "system"
 				end
+				playsound(assets.sfx_select)
 			elseif vars.selections[vars.selection] == "flip" then
 				save.flip = not save.flip
+				playsound(assets.sfx_select)
 			elseif vars.selections[vars.selection] == "crank" then
 				if save.sensitivity == 2 then
 					save.sensitivity = 1
@@ -244,13 +256,17 @@ function options:init(...)
 					save.sensitivity = 2
 					save.crank = true
 				end
+				playsound(assets.sfx_select)
 			elseif vars.selections[vars.selection] == "skipfanfare" then
 				save.skipfanfare = not save.skipfanfare
+				playsound(assets.sfx_select)
 			elseif vars.selections[vars.selection] == "hardmode" then
 				save.hardmode = not save.hardmode
+				playsound(assets.sfx_select)
 			elseif vars.selections[vars.selection] == "reset" then
 				if vars.resetprogress < 3 then
 					vars.resetprogress += 1
+					playsound(assets.sfx_select)
 				elseif vars.resetprogress == 3 then
 					playsound(assets.sfx_boom)
 					vars.resetprogress += 1
@@ -270,10 +286,18 @@ function options:init(...)
 					end
 					save.author_name = ''
 					save.exported_mission = false
+					save.playtime = 0
+					save.gametime = 0
+					save.total_score = 0
+					save.black_match = 0
+					save.gray_match = 0
+					save.white_match = 0
+					save.double_match = 0
+					save.bomb_match = 0
+					save.wild_match = 0
 					updatecheevos()
 				end
 			end
-			playsound(assets.sfx_select)
 		end,
 	}
 	pd.timer.performAfterDelay(scenemanager.transitiontime, function()
@@ -281,16 +305,13 @@ function options:init(...)
 		vars.selection = 1
 	end)
 
-	vars.anim_stars_small_x.repeats = true
-	vars.anim_stars_small_y.repeats = true
-	vars.anim_stars_large_x.repeats = true
-	vars.anim_stars_large_y.repeats = true
 	vars.anim_fg_hexa.reverses = true
 	vars.anim_fg_hexa.repeats = true
 
 	gfx.sprite.setBackgroundDrawingCallback(function(x, y, width, height)
-		assets.stars_small:draw(vars.anim_stars_small_x.value, vars.anim_stars_small_y.value)
-		assets.stars_large:draw(vars.anim_stars_large_x.value, vars.anim_stars_large_y.value)
+		local counter = save.playtime
+		assets.stars_small:draw(-(counter % 133) * 3, -(counter % 97) * 2.45)
+		assets.stars_large:draw(-(counter % 83) * 4.8, -(counter % 42) * 5.7)
 		gfx.setDitherPattern(0.25, gfx.image.kDitherTypeBayer2x2)
 		gfx.fillRect(0, 0, 400, 240)
 		gfx.setImageDrawMode(gfx.kDrawModeFillWhite)

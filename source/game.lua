@@ -1,10 +1,7 @@
-import 'Tanuk_CodeSequence'
-
 -- Setting up consts
 local pd <const> = playdate
 local gfx <const> = pd.graphics
 local smp <const> = pd.sound.sampleplayer
-local random <const> = math.random
 local floor <const> = math.floor
 local ceil <const> = math.ceil
 local tris_x <const> = {140, 170, 200, 230, 260, 110, 140, 170, 200, 230, 260, 290, 110, 140, 170, 200, 230, 260, 290}
@@ -14,7 +11,7 @@ local text <const> = getLocalizedText
 local min <const> = math.min
 local exp <const> = math.exp
 local flash <const> = pd.getReduceFlashing()
-local messagerand <const> = random(1, 10)
+local messagerand <const> = randInt(1, 10)
 
 class('game').extends(gfx.sprite) -- Create the scene's class
 function game:init(...)
@@ -41,11 +38,16 @@ function game:init(...)
 					fademusic()
 				end)
 			end
-			if vars.can_do_stuff and (vars.mode == "zen" or vars.mode == "arcade" or vars.mode == "dailyrun") then
+			if (vars.mode == "zen" or vars.mode == "arcade" or vars.mode == "dailyrun") then
 				menu:addMenuItem(text((vars.mode == "zen" and 'imdone') or 'endgame'), function()
-					self:endround()
+					if vars.can_do_stuff then
+						self:endround()
+					else
+						vars.play_out_timer = false
+						scenemanager:transitionscene(title, false, vars.mode)
+					end
 				end)
-				if vars.mode == "arcade" then
+				if vars.mode == "arcade" and vars.can_do_stuff then
 					menu:addMenuItem(text('restart'), function()
 						self:restart()
 					end)
@@ -84,15 +86,15 @@ function game:init(...)
 		label_3 = gfx.image.new('images/label_3'),
 		label_2 = gfx.image.new('images/label_2'),
 		label_1 = gfx.image.new('images/label_1'),
-		label_go = gfx.image.new('images/label_go_' .. tostring(save.lang)),
-		label_double = gfx.image.new('images/label_double_' .. tostring(save.lang)),
-		label_bomb = gfx.image.new('images/label_bomb_' .. tostring(save.lang)),
+		label_go = gfx.image.new('images/label_go_' .. checklanguage()),
+		label_double = gfx.image.new('images/label_double_' .. checklanguage()),
+		label_bomb = gfx.image.new('images/label_bomb_' .. checklanguage()),
 		label_wild = gfx.image.new('images/label_wild'),
 		modal = gfx.image.new('images/modal'),
 		bg_tile = gfx.image.new('images/bg_tile'),
 		stars = gfx.image.new('images/stars_large'),
 		half = gfx.image.new('images/half'),
-		mission_complete = gfx.image.new('images/mission_complete_' .. tostring(save.lang)),
+		mission_complete = gfx.image.new('images/mission_complete_' .. checklanguage()),
 	}
 
 	vars = {
@@ -130,9 +132,21 @@ function game:init(...)
 		crank_deadzone = 0,
 		crank_change = 0,
 		crank_degrees = 0,
+		play_out_timer = true,
+		sequence = {'right', 'up', 'b', 'down', 'up', 'b', 'down', 'up', 'b'},
+		sequenceindex = 1,
 	}
 	vars.gameHandlers = {
 		leftButtonDown = function()
+			-- for rubdubdub
+			if vars ~= nil and vars.sequence ~= nil and vars.sequenceindex ~= nil then
+				if vars.sequence[vars.sequenceindex] == 'left' then
+					vars.sequenceindex = vars.sequenceindex + 1
+				else
+					vars.sequenceindex = 1
+				end
+			end
+
 			if vars.can_do_stuff then
 				vars.lastdir = false
 				if vars.slot == 2 then
@@ -157,6 +171,15 @@ function game:init(...)
 		end,
 
 		rightButtonDown = function()
+			-- for rubdubdub
+			if vars ~= nil and vars.sequence ~= nil and vars.sequenceindex ~= nil then
+				if vars.sequence[vars.sequenceindex] == 'right' then
+					vars.sequenceindex = vars.sequenceindex + 1
+				else
+					vars.sequenceindex = 1
+				end
+			end
+
 			if vars.can_do_stuff then
 				vars.lastdir = true
 				if vars.slot == 1 then
@@ -181,6 +204,15 @@ function game:init(...)
 		end,
 
 		upButtonDown = function()
+			-- for rubdubdub
+			if vars ~= nil and vars.sequence ~= nil and vars.sequenceindex ~= nil then
+				if vars.sequence[vars.sequenceindex] == 'up' then
+					vars.sequenceindex = vars.sequenceindex + 1
+				else
+					vars.sequenceindex = 1
+				end
+			end
+
 			if vars.can_do_stuff then
 				if vars.slot == 3 or vars.slot == 4 or vars.slot == 5 then
 					if vars.lastdir then
@@ -201,6 +233,15 @@ function game:init(...)
 		end,
 
 		downButtonDown = function()
+			-- for rubdubdub
+			if vars ~= nil and vars.sequence ~= nil and vars.sequenceindex ~= nil then
+				if vars.sequence[vars.sequenceindex] == 'down' then
+					vars.sequenceindex = vars.sequenceindex + 1
+				else
+					vars.sequenceindex = 1
+				end
+			end
+
 			if vars.can_do_stuff then
 				if vars.slot == 1 then
 					vars.slot = 3
@@ -219,6 +260,15 @@ function game:init(...)
 		end,
 
 		AButtonDown = function()
+			-- for rubdubdub
+			if vars ~= nil and vars.sequence ~= nil and vars.sequenceindex ~= nil then
+				if vars.sequence[vars.sequenceindex] == 'a' then
+					vars.sequenceindex = vars.sequenceindex + 1
+				else
+					vars.sequenceindex = 1
+				end
+			end
+
 			if vars.can_do_stuff then
 				if save.flip then
 					self:swap(vars.slot, false)
@@ -229,6 +279,15 @@ function game:init(...)
 		end,
 
 		BButtonDown = function()
+			-- for rubdubdub
+			if vars ~= nil and vars.sequence ~= nil and vars.sequenceindex ~= nil then
+				if vars.sequence[vars.sequenceindex] == 'b' then
+					vars.sequenceindex = vars.sequenceindex + 1
+				else
+					vars.sequenceindex = 1
+				end
+			end
+
 			if vars.can_do_stuff then
 				if save.flip then
 					self:swap(vars.slot, true)
@@ -280,15 +339,15 @@ function game:init(...)
 	end
 
 	if vars.mode == "dailyrun" then
-		math.randomseed(pd.getGMTTime().year .. pd.getGMTTime().month .. pd.getGMTTime().day)
+		setRandomSeed(pd.getGMTTime().year .. pd.getGMTTime().month .. pd.getGMTTime().day)
 	elseif vars.mode == "time" then
 		if vars.seed ~= nil and vars.seed ~= 0 then
-			math.randomseed(vars.seed)
+			setRandomSeed(vars.seed)
 		else
-			math.randomseed(123459 * vars.mission)
+			setRandomSeed(123459 * vars.mission)
 		end
 	else
-		math.randomseed(playdate.getSecondsSinceEpoch())
+		setRandomSeed(playdate.getSecondsSinceEpoch())
 	end
 
 	if vars.mode ~= "dailyrun" then
@@ -301,10 +360,6 @@ function game:init(...)
 			vars.anim_bg_tile_x.repeats = true
 			vars.anim_bg_tile_y.repeats = true
 		end
-	end
-
-	if vars.mode == "zen" then
-		achievements.grant("chill")
 	end
 
 	vars.anim_cursor_x.discardOnCompletion = false
@@ -340,36 +395,44 @@ function game:init(...)
 			self:endround()
 		end
 		pd.timer.performAfterDelay(1000, function()
-			playsound(assets.sfx_count)
-			assets.draw_label = assets.label_3
-			vars.anim_label:resetnew(1000, 350, -200, pd.easingFunctions.linear)
+			if vars.play_out_timer then
+				playsound(assets.sfx_count)
+				assets.draw_label = assets.label_3
+				vars.anim_label:resetnew(1000, 350, -200, pd.easingFunctions.linear)
+			end
 		end)
 		pd.timer.performAfterDelay(2000, function()
-			playsound(assets.sfx_count)
-			assets.draw_label = assets.label_2
-			vars.anim_label:resetnew(1000, 350, -200, pd.easingFunctions.linear)
+			if vars.play_out_timer then
+				playsound(assets.sfx_count)
+				assets.draw_label = assets.label_2
+				vars.anim_label:resetnew(1000, 350, -200, pd.easingFunctions.linear)
+			end
 		end)
 		pd.timer.performAfterDelay(3000, function()
-			playsound(assets.sfx_count)
-			assets.draw_label = assets.label_1
-			vars.anim_label:resetnew(1000, 350, -200, pd.easingFunctions.linear)
+			if vars.play_out_timer then
+				playsound(assets.sfx_count)
+				assets.draw_label = assets.label_1
+				vars.anim_label:resetnew(1000, 350, -200, pd.easingFunctions.linear)
+			end
 		end)
 		pd.timer.performAfterDelay(4000, function()
-			vars.timer.delay = 0
-			assets.draw_label = assets.label_go
-			vars.anim_label:resetnew(1000, 400, -200, pd.easingFunctions.linear)
-			vars.anim_label.timerEndedCallback = function()
-				assets.draw_label = nil
+			if vars.play_out_timer then
+				vars.timer.delay = 0
+				assets.draw_label = assets.label_go
+				vars.anim_label:resetnew(1000, 400, -200, pd.easingFunctions.linear)
+				vars.anim_label.timerEndedCallback = function()
+					assets.draw_label = nil
+				end
+				playsound(assets.sfx_start)
+				newmusic('audio/music/arcade' .. randInt(1, 3), true)
+				vars.can_do_stuff = true
+				self:check()
 			end
-			playsound(assets.sfx_start)
-			newmusic('audio/music/arcade' .. math.random(1, 3), true)
-			vars.can_do_stuff = true
-			self:check()
 		end)
 	elseif vars.mode == "zen" then
 		assets.ui = gfx.image.new('images/ui_zen')
 		pd.timer.performAfterDelay(1000, function()
-			newmusic('audio/music/zen' .. math.random(1, 2), true)
+			newmusic('audio/music/zen' .. randInt(1, 2), true)
 			vars.can_do_stuff = true
 			self:check()
 		end)
@@ -377,66 +440,82 @@ function game:init(...)
 		vars.anim_cursor_y:resetnew(1, 420, 420)
 		assets.ui = gfx.image.new('images/ui_zen')
 		pd.timer.performAfterDelay(1000, function()
-			playsound(assets.sfx_count)
-			assets.draw_label = assets.label_3
-			vars.anim_label:resetnew(1000, 350, -200, pd.easingFunctions.linear)
+			if vars.play_out_timer then
+				playsound(assets.sfx_count)
+				assets.draw_label = assets.label_3
+				vars.anim_label:resetnew(1000, 350, -200, pd.easingFunctions.linear)
+			end
 		end)
 		pd.timer.performAfterDelay(2000, function()
-			playsound(assets.sfx_count)
-			assets.draw_label = assets.label_2
-			vars.anim_label:resetnew(1000, 350, -200, pd.easingFunctions.linear)
+			if vars.play_out_timer then
+				playsound(assets.sfx_count)
+				assets.draw_label = assets.label_2
+				vars.anim_label:resetnew(1000, 350, -200, pd.easingFunctions.linear)
+			end
 		end)
 		pd.timer.performAfterDelay(3000, function()
-			playsound(assets.sfx_count)
-			assets.draw_label = assets.label_1
-			vars.anim_label:resetnew(1000, 350, -200, pd.easingFunctions.linear)
+			if vars.play_out_timer then
+				playsound(assets.sfx_count)
+				assets.draw_label = assets.label_1
+				vars.anim_label:resetnew(1000, 350, -200, pd.easingFunctions.linear)
+			end
 		end)
 		pd.timer.performAfterDelay(4000, function()
-			vars.anim_cursor_y:resetnew(1, 42, 42)
-			assets.draw_label = assets.label_go
-			vars.anim_label:resetnew(1000, 400, -200, pd.easingFunctions.linear)
-			vars.anim_label.timerEndedCallback = function()
-				assets.draw_label = nil
+			if vars.play_out_timer then
+				vars.anim_cursor_y:resetnew(1, 42, 42)
+				assets.draw_label = assets.label_go
+				vars.anim_label:resetnew(1000, 400, -200, pd.easingFunctions.linear)
+				vars.anim_label.timerEndedCallback = function()
+					assets.draw_label = nil
+				end
+				playsound(assets.sfx_start)
+				vars.tris = deepcopy(vars.start)
+				newmusic('audio/music/zen' .. randInt(1, 2), true)
+				vars.can_do_stuff = true
 			end
-			playsound(assets.sfx_start)
-			vars.tris = deepcopy(vars.start)
-			newmusic('audio/music/zen' .. math.random(1, 2), true)
-			vars.can_do_stuff = true
 		end)
 	elseif vars.mode == "logic" then
 		assets.ui = gfx.image.new('images/ui_zen')
 		pd.timer.performAfterDelay(1000, function()
-			newmusic('audio/music/zen' .. math.random(1, 2), true)
+			newmusic('audio/music/zen' .. randInt(1, 2), true)
 			vars.can_do_stuff = true
 			self:check()
 		end)
 	elseif vars.mode == "speedrun" then
 		assets.ui = gfx.image.new('images/ui_zen')
 		pd.timer.performAfterDelay(1000, function()
-			playsound(assets.sfx_count)
-			assets.draw_label = assets.label_3
-			vars.anim_label:resetnew(1000, 350, -200, pd.easingFunctions.linear)
+			if vars.play_out_timer then
+				playsound(assets.sfx_count)
+				assets.draw_label = assets.label_3
+				vars.anim_label:resetnew(1000, 350, -200, pd.easingFunctions.linear)
+			end
 		end)
 		pd.timer.performAfterDelay(2000, function()
-			playsound(assets.sfx_count)
-			assets.draw_label = assets.label_2
-			vars.anim_label:resetnew(1000, 350, -200, pd.easingFunctions.linear)
+			if vars.play_out_timer then
+				playsound(assets.sfx_count)
+				assets.draw_label = assets.label_2
+				vars.anim_label:resetnew(1000, 350, -200, pd.easingFunctions.linear)
+			end
 		end)
 		pd.timer.performAfterDelay(3000, function()
-			playsound(assets.sfx_count)
-			assets.draw_label = assets.label_1
-			vars.anim_label:resetnew(1000, 350, -200, pd.easingFunctions.linear)
+			if vars.play_out_timer then
+				playsound(assets.sfx_count)
+				assets.draw_label = assets.label_1
+				vars.anim_label:resetnew(1000, 350, -200, pd.easingFunctions.linear)
+			end
 		end)
 		pd.timer.performAfterDelay(4000, function()
-			vars.anim_cursor_y:resetnew(1, 42, 42)
-			assets.draw_label = assets.label_go
-			vars.anim_label:resetnew(1000, 400, -200, pd.easingFunctions.linear)
-			vars.anim_label.timerEndedCallback = function()
-				assets.draw_label = nil
+			if vars.play_out_timer then
+				vars.anim_cursor_y:resetnew(1, 42, 42)
+				assets.draw_label = assets.label_go
+				vars.anim_label:resetnew(1000, 400, -200, pd.easingFunctions.linear)
+				vars.anim_label.timerEndedCallback = function()
+					assets.draw_label = nil
+				end
+				playsound(assets.sfx_start)
+				newmusic('audio/music/arcade' .. randInt(1, 3), true)
+				vars.can_do_stuff = true
 			end
-			playsound(assets.sfx_start)
-			newmusic('audio/music/arcade' .. math.random(1, 3), true)
-			vars.can_do_stuff = true
 		end)
 	elseif vars.mode == "time" then
 		assets.ui = gfx.image.new('images/ui_arcade')
@@ -447,31 +526,39 @@ function game:init(...)
 			self:endround()
 		end
 		pd.timer.performAfterDelay(1000, function()
-			playsound(assets.sfx_count)
-			assets.draw_label = assets.label_3
-			vars.anim_label:resetnew(1000, 350, -200, pd.easingFunctions.linear)
+			if vars.play_out_timer then
+				playsound(assets.sfx_count)
+				assets.draw_label = assets.label_3
+				vars.anim_label:resetnew(1000, 350, -200, pd.easingFunctions.linear)
+			end
 		end)
 		pd.timer.performAfterDelay(2000, function()
-			playsound(assets.sfx_count)
-			assets.draw_label = assets.label_2
-			vars.anim_label:resetnew(1000, 350, -200, pd.easingFunctions.linear)
+			if vars.play_out_timer then
+				playsound(assets.sfx_count)
+				assets.draw_label = assets.label_2
+				vars.anim_label:resetnew(1000, 350, -200, pd.easingFunctions.linear)
+			end
 		end)
 		pd.timer.performAfterDelay(3000, function()
-			playsound(assets.sfx_count)
-			assets.draw_label = assets.label_1
-			vars.anim_label:resetnew(1000, 350, -200, pd.easingFunctions.linear)
+			if vars.play_out_timer then
+				playsound(assets.sfx_count)
+				assets.draw_label = assets.label_1
+				vars.anim_label:resetnew(1000, 350, -200, pd.easingFunctions.linear)
+			end
 		end)
 		pd.timer.performAfterDelay(4000, function()
-			vars.timer.delay = 0
-			assets.draw_label = assets.label_go
-			vars.anim_label:resetnew(1000, 400, -200, pd.easingFunctions.linear)
-			vars.anim_label.timerEndedCallback = function()
-				assets.draw_label = nil
+			if vars.play_out_timer then
+				vars.timer.delay = 0
+				assets.draw_label = assets.label_go
+				vars.anim_label:resetnew(1000, 400, -200, pd.easingFunctions.linear)
+				vars.anim_label.timerEndedCallback = function()
+					assets.draw_label = nil
+				end
+				playsound(assets.sfx_start)
+				newmusic('audio/music/arcade' .. randInt(1, 3), true)
+				vars.can_do_stuff = true
+				self:check()
 			end
-			playsound(assets.sfx_start)
-			newmusic('audio/music/arcade' .. math.random(1, 3), true)
-			vars.can_do_stuff = true
-			self:check()
 		end)
 	else
 		assets.ui = gfx.image.new('images/ui_zen')
@@ -557,7 +644,6 @@ function game:init(...)
 	end
 
 	sprites.canvas = classes.game_canvas()
-	sprites.code = Tanuk_CodeSequence({pd.kButtonRight, pd.kButtonUp, pd.kButtonB, pd.kButtonDown, pd.kButtonUp, pd.kButtonB, pd.kButtonDown, pd.kButtonUp, pd.kButtonB}, function() self:boom(true) end)
 	self:add()
 	pd.datastore.write(save)
 end
@@ -603,7 +689,7 @@ function game:tri(x, y, up, color, powerup)
 			else
 				if assets['powerup_' .. powerup .. '_down'] ~= nil then assets['powerup_' .. powerup .. '_down'][1]:draw(x - 28, y - 23) end
 			end
-		else
+		elseif floor(vars.anim_powerup.value)>= 1 and floor(vars.anim_powerup.value) < 5 then
 			if up then
 				if assets['powerup_' .. powerup .. '_up'] ~= nil then assets['powerup_' .. powerup .. '_up'][floor(vars.anim_powerup.value)]:draw(x - 28, y - 23) end
 			else
@@ -620,6 +706,7 @@ function game:swap(slot, dir)
 		vars.anim_cursor:resetnew(75, 2.99, 1)
 		vars.moves += 1
 		save.swaps += 1
+		updatecheevos()
 		playsound(assets.sfx_swap)
 		local tochange
 		temp1, temp2, temp3, temp4, temp5, temp6 = self:findslot(slot)
@@ -759,12 +846,12 @@ function game:hexa(temp1, temp2, temp3, temp4, temp5, temp6)
 	assets.sfx_hexaprep:setRate(1 + (0.1 * vars.combo))
 	playsound(assets.sfx_hexaprep)
 	self:colorflip(temp1, temp2, temp3, temp4, temp5, temp6, true)
-	pd.timer.performAfterDelay(70, function()
+	pd.timer.performAfterDelay(100, function()
 		if not flash then
 			self:colorflip(temp1, temp2, temp3, temp4, temp5, temp6, false)
 		end
 	end)
-	pd.timer.performAfterDelay(140, function()
+	pd.timer.performAfterDelay(200, function()
 		playsound(assets.sfx_hexaprep)
 		if flash then
 			self:colorflip(temp1, temp2, temp3, temp4, temp5, temp6, false)
@@ -772,12 +859,12 @@ function game:hexa(temp1, temp2, temp3, temp4, temp5, temp6)
 			self:colorflip(temp1, temp2, temp3, temp4, temp5, temp6, true)
 		end
 	end)
-	pd.timer.performAfterDelay(210, function()
+	pd.timer.performAfterDelay(300, function()
 		if not flash then
 			self:colorflip(temp1, temp2, temp3, temp4, temp5, temp6, false)
 		end
 	end)
-	pd.timer.performAfterDelay(280, function()
+	pd.timer.performAfterDelay(400, function()
 		if vars.can_do_stuff or (not vars.can_do_stuff and vars.ended) then
 			vars.hexas += 1
 			save.hexas += 1
@@ -860,7 +947,7 @@ function game:hexa(temp1, temp2, temp3, temp4, temp5, temp6)
 				temp5.color, temp5.powerup = self:randomizetri()
 				temp6.color, temp6.powerup = self:randomizetri()
 				if save.sfx then
-					local random = random(1, 10000)
+					local random = randInt(1, 10000)
 					if random == 1 then
 						assets.sfx_vine:play()
 					else
@@ -921,6 +1008,7 @@ function game:hexa(temp1, temp2, temp3, temp4, temp5, temp6)
 			pd.timer.performAfterDelay(200, function()
 				pd.inputHandlers.push(vars.gameHandlers)
 				vars.active_hexa = false
+				updatecheevos()
 				self:check()
 			end)
 		end
@@ -1004,8 +1092,8 @@ function game:randomizetri()
 		powerup = ""
 		return color, powerup
 	else
-		local randomcolor = random(1, 3)
-		local randompowerup = random(1, 50)
+		local randomcolor = randInt(1, 3)
+		local randompowerup = randInt(1, 50)
 		local color
 		local powerup
 		if randomcolor == 1 then
@@ -1057,31 +1145,39 @@ function game:restart()
 		self:endround()
 	end
 	pd.timer.performAfterDelay(1000, function()
-		playsound(assets.sfx_count)
-		assets.draw_label = assets.label_3
-		vars.anim_label:resetnew(1000, 350, -200, pd.easingFunctions.linear)
+		if vars.play_out_timer then
+			playsound(assets.sfx_count)
+			assets.draw_label = assets.label_3
+			vars.anim_label:resetnew(1000, 350, -200, pd.easingFunctions.linear)
+		end
 	end)
 	pd.timer.performAfterDelay(2000, function()
-		playsound(assets.sfx_count)
-		assets.draw_label = assets.label_2
-		vars.anim_label:resetnew(1000, 350, -200, pd.easingFunctions.linear)
+		if vars.play_out_timer then
+			playsound(assets.sfx_count)
+			assets.draw_label = assets.label_2
+			vars.anim_label:resetnew(1000, 350, -200, pd.easingFunctions.linear)
+		end
 	end)
 	pd.timer.performAfterDelay(3000, function()
-		playsound(assets.sfx_count)
-		assets.draw_label = assets.label_1
-		vars.anim_label:resetnew(1000, 350, -200, pd.easingFunctions.linear)
+		if vars.play_out_timer then
+			playsound(assets.sfx_count)
+			assets.draw_label = assets.label_1
+			vars.anim_label:resetnew(1000, 350, -200, pd.easingFunctions.linear)
+		end
 	end)
 	pd.timer.performAfterDelay(4000, function()
-		vars.timer:start()
-		assets.draw_label = assets.label_go
-		vars.anim_label:resetnew(1000, 400, -200, pd.easingFunctions.linear)
-		vars.anim_label.timerEndedCallback = function()
-			assets.draw_label = nil
+		if vars.play_out_timer then
+			vars.timer:start()
+			assets.draw_label = assets.label_go
+			vars.anim_label:resetnew(1000, 400, -200, pd.easingFunctions.linear)
+			vars.anim_label.timerEndedCallback = function()
+				assets.draw_label = nil
+			end
+			playsound(assets.sfx_start)
+			newmusic('audio/music/arcade' .. randInt(1, 3), true)
+			vars.can_do_stuff = true
+			self:check()
 		end
-		playsound(assets.sfx_start)
-		newmusic('audio/music/arcade' .. math.random(1, 3), true)
-		vars.can_do_stuff = true
-		self:check()
 	end)
 end
 
@@ -1250,6 +1346,7 @@ function game:endround()
 			end
 		end)
 	elseif vars.mode == "zen" then
+		achievements.grant("chill")
 		if not vars.ended then
 			playsound(assets.sfx_start)
 		end
@@ -1336,7 +1433,7 @@ function game:endround()
 		pd.timer.performAfterDelay(1500, function()
 			playsound(assets.sfx_mission)
 			vars.missioncomplete = true
-			updatecheevos()
+			updatecheevos(vars.mission == 50 and true or false)
 			pd.datastore.write(save)
 		end)
 		pd.timer.performAfterDelay(3000, function()
@@ -1363,7 +1460,7 @@ function game:endround()
 			end
 			playsound(assets.sfx_mission)
 			vars.missioncomplete = true
-			updatecheevos()
+			updatecheevos(vars.mission == 50 and true or false)
 			pd.datastore.write(save)
 			pd.timer.performAfterDelay(1500, function()
 				if vars.mission ~= nil and vars.mission > 50 then
@@ -1390,7 +1487,7 @@ function game:endround()
 			end
 			playsound(assets.sfx_mission)
 			vars.missioncomplete = true
-			updatecheevos()
+			updatecheevos(vars.mission == 50 and true or false)
 			pd.datastore.write(save)
 			pd.timer.performAfterDelay(1500, function()
 				if vars.mission ~= nil and vars.mission > 50 then
@@ -1417,7 +1514,7 @@ function game:endround()
 			end
 			playsound(assets.sfx_mission)
 			vars.missioncomplete = true
-			updatecheevos()
+			updatecheevos(vars.mission == 50 and true or false)
 			pd.datastore.write(save)
 			pd.timer.performAfterDelay(1500, function()
 				if vars.mission ~= nil and vars.mission > 50 then
@@ -1530,5 +1627,12 @@ function game:update()
 	end
 	if vars.can_do_stuff then
 		save.gametime += 1
+	end
+	if vars.sequenceindex > #vars.sequence and not vars.boomed then
+		if vars.can_do_stuff then
+			self:boom(true)
+		else
+			vars.sequenceindex = 1
+		end
 	end
 end

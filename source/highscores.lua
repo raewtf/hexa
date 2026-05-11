@@ -37,10 +37,6 @@ function highscores:init(...)
 
 	vars = {
 		mode = args[1] or "arcade",
-		anim_stars_small_x = pd.timer.new(4000, 0, -399),
-		anim_stars_small_y = pd.timer.new(2750, 0, -239),
-		anim_stars_large_x = pd.timer.new(2500, 0, -399),
-		anim_stars_large_y = pd.timer.new(1250, 0, -239),
 		result = {},
 		best = {},
 		loading = false,
@@ -66,11 +62,6 @@ function highscores:init(...)
 
 	self:refreshboards(vars.mode)
 
-	vars.anim_stars_small_x.repeats = true
-	vars.anim_stars_small_y.repeats = true
-	vars.anim_stars_large_x.repeats = true
-	vars.anim_stars_large_y.repeats = true
-
 	if pd.getReduceFlashing() then
 		vars.blink = {}
 		vars.blink.value = 1
@@ -80,8 +71,9 @@ function highscores:init(...)
 	end
 
 	gfx.sprite.setBackgroundDrawingCallback(function(x, y, width, height)
-		assets.stars_small:draw(vars.anim_stars_small_x.value, vars.anim_stars_small_y.value)
-		assets.stars_large:draw(vars.anim_stars_large_x.value, vars.anim_stars_large_y.value)
+		local counter = save.playtime
+		assets.stars_small:draw(-(counter % 133) * 3, -(counter % 97) * 2.45)
+		assets.stars_large:draw(-(counter % 83) * 4.8, -(counter % 42) * 5.7)
 		gfx.setDitherPattern(0.25, gfx.image.kDitherTypeBayer2x2)
 		gfx.fillRect(0, 0, 400, 240)
 		gfx.setImageDrawMode(gfx.kDrawModeFillWhite)
@@ -179,21 +171,22 @@ function highscores:refreshboards(mode)
 				printTable(status)
 				printTable(result)
 			end
-			if status.code == "OK" then
+			if status.code == "OK" and vars.mode ~= nil then
 				vars.result = result
+				pd.scoreboards.getPersonalBest((save.hardmode and 'hard' .. vars.mode) or (vars.mode), function(status, result)
+					if vars.debug then
+						print('--- ' .. (save.hardmode and 'hard' .. vars.mode) or (vars.mode) .. ' personal best ---')
+						printTable(status)
+						printTable(result)
+					end
+					if status.code == "OK" and vars.best ~= nil then
+						vars.best = result
+					end
+					vars.loading = false
+				end)
 			else
 				vars.result = "fail"
-			end
-		end)
-		pd.scoreboards.getPersonalBest((save.hardmode and 'hard' .. vars.mode) or (vars.mode), function(status, result)
-			vars.loading = false
-			if vars.debug then
-				print('--- ' .. (save.hardmode and 'hard' .. vars.mode) or (vars.mode) .. ' personal best ---')
-				printTable(status)
-				printTable(result)
-			end
-			if status.code == "OK" then
-				vars.best = result
+				vars.loading = false
 			end
 		end)
 	end

@@ -54,10 +54,6 @@ function missions:init(...)
 
 	vars = {
 		custom = args[1],
-		anim_stars_small_x = pd.timer.new(4000, 0, -399),
-		anim_stars_small_y = pd.timer.new(2750, 0, -239),
-		anim_stars_large_x = pd.timer.new(2500, 0, -399),
-		anim_stars_large_y = pd.timer.new(1250, 0, -239),
 	}
 	vars.missionsHandlers = {
 		leftButtonDown = function()
@@ -125,13 +121,13 @@ function missions:init(...)
 		end,
 
 		AButtonDown = function()
-			if vars.custom then
+			if (vars.custom and #vars.custom_files > 0) then
 				local _, _, column = assets.custom_grid:getSelection()
 				if vars.keytimer ~= nil then vars.keytimer:remove() end
 				playsound(assets.sfx_select)
 				scenemanager:transitionscene(game, vars.custom_missions[column].type, vars.custom_missions[column].mission, vars.custom_missions[column].modifier or nil, vars.custom_missions[column].start or nil, vars.custom_missions[column].goal or nil, vars.custom_missions[column].seed or nil, vars.custom_missions[column].name or nil)
 				fademusic()
-			else
+			elseif not vars.custom then
 				local _, _, column = assets.grid:getSelection()
 				if vars.keytimer ~= nil then vars.keytimer:remove() end
 				local _, _, column = assets.grid:getSelection()
@@ -150,12 +146,9 @@ function missions:init(...)
 		pd.inputHandlers.push(vars.missionsHandlers)
 	end)
 
-	vars.anim_stars_small_x.repeats = true
-	vars.anim_stars_small_y.repeats = true
-	vars.anim_stars_large_x.repeats = true
-	vars.anim_stars_large_y.repeats = true
-
 	function assets.grid:drawCell(section, row, column, selected, x, y, width, height)
+		local offset = 0
+		if checklanguage() == 'jp' then offset = 7 end
 		gfx.setColor(gfx.kColorWhite)
 		gfx.fillRect(x, y, width, height)
 		gfx.setColor(gfx.kColorBlack)
@@ -167,15 +160,15 @@ function missions:init(...)
 		end
 		if column > save.highest_mission then
 			assets.half_circle:drawTextAligned('🔒 ' .. text('mission_label') .. column, x + (width / 2), y + 8, kTextAlignment.center)
-			assets.half_circle:drawTextAligned(text('mission_locked'), x + (width / 2), y + (height / 3), kTextAlignment.center)
+			assets.half_circle:drawTextAligned(text('mission_locked'), x + (width / 2), y + (height / 3) + offset, kTextAlignment.center)
 		else
 			assets.full_circle:drawTextAligned(text('mission_label') .. column, x + (width / 2), y + 8, kTextAlignment.center)
 			if missions_list[column].type == "picture" then
-				assets.full_circle:drawTextAligned(text('mission_picture1') .. missions_list[column].name .. text('mission_picture2'), x + (width / 2), y + (height / 3.7), kTextAlignment.center)
+				assets.full_circle:drawTextAligned(text('mission_picture1') .. missions_list[column].name .. text('mission_picture2'), x + (width / 2), y + (height / 3.7) + offset, kTextAlignment.center)
 			elseif missions_list[column].type == "logic" or missions_list[column].type == "speedrun" then
-				assets.full_circle:drawTextAligned(text('mission_' .. missions_list[column].type .. '_' .. missions_list[column].modifier), x + (width / 2), y + (height / 3.7), kTextAlignment.center)
+				assets.full_circle:drawTextAligned(text('mission_' .. missions_list[column].type .. '_' .. missions_list[column].modifier), x + (width / 2), y + (height / 3.7) + offset, kTextAlignment.center)
 			else
-				assets.full_circle:drawTextAligned(text('mission_' .. missions_list[column].type), x + (width / 2), y + (height / 3.7), kTextAlignment.center)
+				assets.full_circle:drawTextAligned(text('mission_' .. missions_list[column].type), x + (width / 2), y + (height / 3.7) + offset, kTextAlignment.center)
 			end
 			if missions_list[column].type == "picture" or missions_list[column].type == "logic" then
 				assets.full_circle:drawTextAligned(text('swaps') .. text('divvy') .. commalize(save.mission_bests['mission' .. column] or 0), x + (width / 2), y + (height - 22), kTextAlignment.center)
@@ -234,6 +227,8 @@ function missions:init(...)
 		assets.custom_grid:scrollCellToCenter(1, 1, 1, false)
 
 		function assets.custom_grid:drawCell(section, row, column, selected, x, y, width, height)
+			local offset = 0
+			if checklanguage() == 'jp' then offset = 7 end
 			gfx.setColor(gfx.kColorWhite)
 			gfx.fillRect(x, y, width, height)
 			gfx.setColor(gfx.kColorBlack)
@@ -245,11 +240,11 @@ function missions:init(...)
 			end
 			assets.full_circle:drawTextAligned(text('mission_by') .. vars.custom_missions[column].author, x + (width / 2), y + 8, kTextAlignment.center)
 			if vars.custom_missions[column].type == "picture" then
-				assets.full_circle:drawTextAligned(text('mission_picture1') .. vars.custom_missions[column].name .. text('mission_picture2'), x + (width / 2), y + (height / 3.7), kTextAlignment.center)
+				assets.full_circle:drawTextAligned(text('mission_picture1') .. vars.custom_missions[column].name .. text('mission_picture2'), x + (width / 2), y + (height / 3.7) + offset, kTextAlignment.center)
 			elseif vars.custom_missions[column].type == "logic" or vars.custom_missions[column].type == "speedrun" then
-				assets.full_circle:drawTextAligned(text('mission_' .. vars.custom_missions[column].type .. '_' .. vars.custom_missions[column].modifier), x + (width / 2), y + (height / 3.7), kTextAlignment.center)
+				assets.full_circle:drawTextAligned(text('mission_' .. vars.custom_missions[column].type .. '_' .. vars.custom_missions[column].modifier), x + (width / 2), y + (height / 3.7) + offset, kTextAlignment.center)
 			else
-				assets.full_circle:drawTextAligned(text('mission_' .. vars.custom_missions[column].type), x + (width / 2), y + (height / 3.7), kTextAlignment.center)
+				assets.full_circle:drawTextAligned(text('mission_' .. vars.custom_missions[column].type), x + (width / 2), y + (height / 3.7) + offset, kTextAlignment.center)
 			end
 			if vars.custom_missions[column].type == "picture" or vars.custom_missions[column].type == "logic" then
 				assets.full_circle:drawTextAligned(text('swaps') .. text('divvy') .. commalize(save.mission_bests['mission' .. vars.custom_missions[column].mission]), x + (width / 2), y + (height - 22), kTextAlignment.center)
@@ -263,8 +258,9 @@ function missions:init(...)
 	end
 
 	gfx.sprite.setBackgroundDrawingCallback(function(x, y, width, height)
-		assets.stars_small:draw(vars.anim_stars_small_x.value, vars.anim_stars_small_y.value)
-		assets.stars_large:draw(vars.anim_stars_large_x.value, vars.anim_stars_large_y.value)
+		local counter = save.playtime
+		assets.stars_small:draw(-(counter % 133) * 3, -(counter % 97) * 2.45)
+		assets.stars_large:draw(-(counter % 83) * 4.8, -(counter % 42) * 5.7)
 		if (vars.custom and #vars.custom_files > 0) or (not vars.custom) then
 			gfx.setColor(gfx.kColorWhite)
 			gfx.setDitherPattern(0.75, gfx.image.kDitherTypeBayer2x2)

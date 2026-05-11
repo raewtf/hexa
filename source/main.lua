@@ -6,6 +6,17 @@ function getLocalizedText(key)
 		data = en
 	elseif save.lang == 'fr' then
 		data = fr
+	elseif save.lang == 'jp' then
+		data = jp
+	elseif save.lang == 'system' then
+		if sys == playdate.graphics.font.kLanguageEnglish then
+			data = en
+		elseif sys == playdate.graphics.font.kLanguageJapanese then
+			data = jp
+		else
+			-- fall back to english
+			data = en
+		end
 	end
 	return data and data[key] or key
 end
@@ -20,11 +31,13 @@ import 'CoreLibs/sprites'
 import 'CoreLibs/keyboard'
 import 'CoreLibs/graphics'
 import 'CoreLibs/animation'
+import 'xor'
 import 'langs'
 import 'achievements'
 import 'scenemanager'
 import 'cheevos'
 import 'title'
+import 'langselect'
 scenemanager = scenemanager()
 
 -- Setting up basic SDK params
@@ -38,6 +51,8 @@ catalog = false
 if pd.metadata.bundleID == "wtf.rae.hexa" then
     catalog = true
 end
+
+sys = playdate.getSystemLanguage()
 
 pd.display.setRefreshRate(30)
 gfx.setBackgroundColor(gfx.kColorBlack)
@@ -71,7 +86,7 @@ function savecheck()
 		save.sfx = 5
 	end
 
-	if save.lang == nil then save.lang = 'en' end
+	if save.lang == nil then save.lang = 'system' end
     if save.flip == nil then save.flip = false end
     if save.crank == nil then save.crank = true end
     save.sensitivity = save.sensitivity or 2
@@ -114,9 +129,30 @@ end
 -- ... now we run that!
 savecheck()
 
+function checklanguage()
+	if save.lang == 'en' then
+		return 'en'
+	elseif save.lang == 'fr' then
+		return 'fr'
+	elseif save.lang == 'jp' then
+		return 'jp'
+	elseif save.lang == 'system' then
+		local sys = playdate.getSystemLanguage()
+		if sys == playdate.graphics.font.kLanguageEnglish then
+			return 'en'
+		elseif sys == playdate.graphics.font.kLanguageJapanese then
+			return 'jp'
+		else
+			return nil
+		end
+	else
+		return nil
+	end
+end
+
 achievements.initialize(achievementData, true)
 
-function updatecheevos()
+function updatecheevos(mission50)
 	achievements.advanceTo('arcade1000', save.score)
 	achievements.advanceTo('arcade5000', save.score)
 	achievements.advanceTo('arcade10000', save.score)
@@ -129,17 +165,18 @@ function updatecheevos()
 	achievements.advanceTo('hexas500', save.hexas)
 	achievements.advanceTo('hexas1000', save.hexas)
 	achievements.advanceTo('hexas2500', save.hexas)
-	if (save.lastdaily.year ~= nil and save.lastdaily.year > 0) then achievements.grant('daily') end
-	if save.highest_mission > 1 then achievements.grant('mission1') end
-	achievements.advanceTo('mission50', save.highest_mission)
+	if (save.highest_mission - 1) >= 1 then achievements.grant('mission1') end
+	achievements.advanceTo('mission50', save.highest_mission - 1)
+	if mission50 then achievements.grant('mission50') end
+	if save.lastdaily ~= nil and (save.lastdaily.score ~= nil and save.lastdaily.score > 0) then achievements.grant('daily') end
 	if save.exported_mission then achievements.grant('missioncommand') end
 	achievements.save()
 end
 
 updatecheevos()
 
-local mask_arcade_true = gfx.image.new('images/mask_arcade_true_' .. tostring(save.lang))
-local mask_arcade_false = gfx.image.new('images/mask_arcade_false_' .. tostring(save.lang))
+local mask_arcade_true = gfx.image.new('images/mask_arcade_true_' .. checklanguage())
+local mask_arcade_false = gfx.image.new('images/mask_arcade_false_' .. checklanguage())
 local mask_zen <const> = gfx.image.new('images/mask_zen')
 local pause <const> = gfx.image.new('images/pause')
 local pause_luci <const> = gfx.image.new('images/pause_luci')
@@ -160,8 +197,8 @@ function pd.gameWillTerminate()
 end
 
 function pauseimage(mode)
-	mask_arcade_true = gfx.image.new('images/mask_arcade_true_' .. tostring(save.lang))
-	mask_arcade_false = gfx.image.new('images/mask_arcade_false_' .. tostring(save.lang))
+	mask_arcade_true = gfx.image.new('images/mask_arcade_true_' .. checklanguage())
+	mask_arcade_false = gfx.image.new('images/mask_arcade_false_' .. checklanguage())
     if mode == nil or not vars.can_do_stuff then
 		if vars.mode ~= nil and (vars.mode == 'edit' or vars.mode == 'save') then
 			local pauseimg = pause:copy()
@@ -401,7 +438,11 @@ function shakies_y(time, int)
     anim_shakies_y = pd.timer.new(time or 750, int or 10, 0, pd.easingFunctions.outElastic)
 end
 
-scenemanager:switchscene(title, true, 'arcade')
+if checklanguage() == nil then
+	scenemanager:switchscene(langselect)
+else
+	scenemanager:switchscene(title, true, 'arcade')
+end
 
 function pd.update()
     if (save.lastdaily.score ~= 0) and not (save.lastdaily.year == pd.getGMTTime().year and save.lastdaily.month == pd.getGMTTime().month and save.lastdaily.day == pd.getGMTTime().day) then
@@ -410,15 +451,14 @@ function pd.update()
     end
     -- Screen shake update logic
     if anim_shakies ~= nil then
-        pd.display.setOffset(anim_shakies.value, offsety)
+        pd.display.setOffset((anim_shakies.value // 2) * 2, offsety)
     end
     offsetx, offsety = pd.display.getOffset()
     if anim_shakies_y ~= nil then
-        pd.display.setOffset(offsetx, anim_shakies_y.value)
+        pd.display.setOffset(offsetx, (anim_shakies_y.value // 2) * 2)
     end
     -- Catch-all stuff ...
     gfx.sprite.update()
     pd.timer.updateTimers()
-    -- pd.drawFPS(10, 10)
 	save.playtime += 1
 end

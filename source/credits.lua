@@ -33,10 +33,6 @@ function credits:init(...)
 	}
 
 	vars = {
-		anim_stars_small_x = pd.timer.new(4000, 0, -399),
-		anim_stars_small_y = pd.timer.new(2750, 0, -239),
-		anim_stars_large_x = pd.timer.new(2500, 0, -399),
-		anim_stars_large_y = pd.timer.new(1250, 0, -239),
 		page = 1,
 	}
 	vars.creditsHandlers = {
@@ -51,7 +47,7 @@ function credits:init(...)
 		end,
 
 		rightButtonDown = function()
-			if vars.page < 2 then
+			if vars.page < 3 then
 				vars.page += 1
 				playsound(assets.sfx_move)
 			else
@@ -69,21 +65,17 @@ function credits:init(...)
 		pd.inputHandlers.push(vars.creditsHandlers)
 	end)
 
-	vars.anim_stars_small_x.repeats = true
-	vars.anim_stars_small_y.repeats = true
-	vars.anim_stars_large_x.repeats = true
-	vars.anim_stars_large_y.repeats = true
-
 	gfx.sprite.setBackgroundDrawingCallback(function(x, y, width, height)
-		assets.stars_small:draw(vars.anim_stars_small_x.value, vars.anim_stars_small_y.value)
-		assets.stars_large:draw(vars.anim_stars_large_x.value, vars.anim_stars_large_y.value)
+		local counter = save.playtime
+		assets.stars_small:draw(-(counter % 133) * 3, -(counter % 97) * 2.45)
+		assets.stars_large:draw(-(counter % 83) * 4.8, -(counter % 42) * 5.7)
 		gfx.setDitherPattern(0.25, gfx.image.kDitherTypeBayer2x2)
 		gfx.fillRect(0, 0, 400, 240)
 		gfx.setImageDrawMode(gfx.kDrawModeFillWhite)
 		assets.full_circle:drawTextAligned(text('credits' .. vars.page), 200, 5, kTextAlignment.center)
 		assets.half_circle:drawText(text('page'), 65, 205)
 		assets.half_circle:drawText(text('back'), 70, 220)
-		assets.half_circle:drawTextAligned(vars.page .. '/2', 330, 220, kTextAlignment.right)
+		assets.half_circle:drawTextAligned(vars.page .. '/3', 330, 220, kTextAlignment.right)
 		gfx.setImageDrawMode(gfx.kDrawModeCopy)
 		assets.fg:draw(0, 0)
 	end)

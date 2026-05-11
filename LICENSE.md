@@ -10,9 +10,11 @@
 
 (source/audio/sfx) SFX made using [JSFXR](https://sfxr.me/)
 
-(source/Tanuk_CodeSequence.lua) [Tanuk_CodeSequence](https://github.com/Schyzophrenic/Tanuk_CodeSequence) library made by Toad and Schyzo, under [MIT](https://github.com/Schyzophrenic/Tanuk_CodeSequence/blob/main/LICENSE)
+(source/xor.lua) xorshift Lua implementation made by Eli Piilonen, under [CC0](https://creativecommons.org/public-domain/cc0/)
 
-(source/main.lua) Some code adapted from the [lua-users wiki](http://lua-users.org/wiki/FormattingNumbers)
+(source/langs.lua) French and Japanese translations provided by Voxy and Philemax respectively; under MIT
+
+Some code adapted from the [lua-users wiki](http://lua-users.org/wiki/FormattingNumbers)
 
 The rest of the code made by rae
 

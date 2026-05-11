@@ -3,6 +3,9 @@ local gfx <const> = pd.graphics
 local smp <const> = pd.sound.sampleplayer
 local floor <const> = math.floor
 
+local podbaydoor1
+local podbaydoor2
+
 class('scenemanager').extends()
 
 local podbaydoor <const> = gfx.image.new('images/podbaydoor')
@@ -36,27 +39,30 @@ function scenemanager:transitionscene(scene, ...)
     self.transitioning = true
     self.newscene = scene
     self.sceneargs = {...}
-    local transitiontimer = self:transition(-230, -10, 410, 202)
+    local transitiontimer = self:transition(-0.1, 1)
     playsound(sfx_transition)
     transitiontimer.timerEndedCallback = function()
         self:loadnewscene()
-        transitiontimer = self:transition(-10, -230, 202, 410)
+        transitiontimer = self:transition(1, -0.1)
         transitiontimer.timerEndedCallback = function()
             self.transitioning = false
+			podbaydoor1:remove()
+			podbaydoor2:remove()
         end
     end
 end
 
-function scenemanager:transition(podbaydoor1start, podbaydoor1end, podbaydoor2start, podbaydoor2end)
-    local podbaydoor1 = self:loadingsprite(false)
-    local podbaydoor2 = self:loadingsprite(true)
-    podbaydoor1:moveTo(podbaydoor1start, 0)
-    podbaydoor2:moveTo(podbaydoor2start, 0)
-    local podbaydoor1timer = pd.timer.new(self.transitiontime, podbaydoor1start, podbaydoor1end, pd.easingFunctions.inOutCubic)
-    local podbaydoor2timer = pd.timer.new(self.transitiontime, podbaydoor2start, podbaydoor2end, pd.easingFunctions.inOutCubic)
-    podbaydoor1timer.updateCallback = function(timer) podbaydoor1:moveTo(floor(podbaydoor1timer.value / 2) * 2, 0) end
-    podbaydoor2timer.updateCallback = function(timer) podbaydoor2:moveTo(floor(podbaydoor2timer.value / 2) * 2, 0) end
-    return podbaydoor1timer
+function scenemanager:transition(podbaydoorstart, podbaydoorend)
+    podbaydoor1 = self:loadingsprite(false)
+    podbaydoor2 = self:loadingsprite(true)
+    podbaydoor1:moveTo(floor(((podbaydoorstart * 200) - 219) / 2) * 2, 0)
+    podbaydoor2:moveTo(floor((-(podbaydoorstart * 200) + 398) / 2) * 2, 0)
+    local podbaydoortimer = pd.timer.new(self.transitiontime, podbaydoorstart, podbaydoorend, pd.easingFunctions.inOutCubic)
+    podbaydoortimer.updateCallback = function(timer)
+		podbaydoor1:moveTo(floor(((timer.value * 200) - 219) / 2) * 2, 0)
+		podbaydoor2:moveTo(floor((-(timer.value * 200) + 398) / 2) * 2, 0)
+	end
+    return podbaydoortimer
 end
 
 function scenemanager:loadingsprite(flip)
@@ -64,10 +70,10 @@ function scenemanager:loadingsprite(flip)
     loading:setZIndex(26000)
     loading:setCenter(0, 0)
     if flip then
-        loading:moveTo(400, 0)
+        loading:moveTo(500, 0)
         loading:setImageFlip("flipX")
     else
-        loading:moveTo(-200, 0)
+        loading:moveTo(-500, 0)
     end
     loading:setIgnoresDrawOffset(true)
     loading:add()
