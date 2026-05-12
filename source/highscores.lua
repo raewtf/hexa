@@ -133,6 +133,7 @@ function highscores:init(...)
 	self:add()
 	newmusic('audio/music/title', true)
 	pd.datastore.write(save)
+	achievements.save()
 end
 
 function highscores:refreshboards(mode)

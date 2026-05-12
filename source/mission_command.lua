@@ -1246,6 +1246,7 @@ function mission_command:save()
 	save.exported_mission = true
 	vars.puzzle_exported = true
 	updatecheevos()
+	achievements.save()
 	pd.inputHandlers.pop()
 	pd.inputHandlers.push(vars.mission_command_doneHandlers)
 	save.author_name = vars.author_name

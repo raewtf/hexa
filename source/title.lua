@@ -116,6 +116,7 @@ function title:init(...)
 						save.lastdaily.score = 0
 						save.lastdaily.sent = false
 						pd.datastore.write(save)
+						achievements.save()
 					end)
 				else
 					shakies()

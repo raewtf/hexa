@@ -646,6 +646,7 @@ function game:init(...)
 	sprites.canvas = classes.game_canvas()
 	self:add()
 	pd.datastore.write(save)
+	achievements.save()
 end
 
 function game:tri(x, y, up, color, powerup)
@@ -1280,6 +1281,7 @@ function game:endround()
 			end
 			updatecheevos()
 			pd.datastore.write(save)
+			achievements.save()
 			newmusic('audio/music/lose')
 			vars.anim_modal:resetnew(500, 240, 0, pd.easingFunctions.outBack)
 			if save.skipfanfare then
@@ -1359,6 +1361,7 @@ function game:endround()
 				pd.inputHandlers.push(vars.losingHandlers, true)
 			end
 			pd.datastore.write(save)
+			achievements.save()
 			newmusic('audio/music/zen_end')
 			vars.anim_modal:resetnew(500, 240, 0, pd.easingFunctions.outBack)
 			if save.skipfanfare then
@@ -1435,6 +1438,7 @@ function game:endround()
 			vars.missioncomplete = true
 			updatecheevos(vars.mission == 50 and true or false)
 			pd.datastore.write(save)
+			achievements.save()
 		end)
 		pd.timer.performAfterDelay(3000, function()
 			if vars.mission ~= nil and vars.mission > 50 then
@@ -1462,6 +1466,7 @@ function game:endround()
 			vars.missioncomplete = true
 			updatecheevos(vars.mission == 50 and true or false)
 			pd.datastore.write(save)
+			achievements.save()
 			pd.timer.performAfterDelay(1500, function()
 				if vars.mission ~= nil and vars.mission > 50 then
 					scenemanager:transitionscene(missions, true)
@@ -1489,6 +1494,7 @@ function game:endround()
 			vars.missioncomplete = true
 			updatecheevos(vars.mission == 50 and true or false)
 			pd.datastore.write(save)
+			achievements.save()
 			pd.timer.performAfterDelay(1500, function()
 				if vars.mission ~= nil and vars.mission > 50 then
 					scenemanager:transitionscene(missions, true)
@@ -1516,6 +1522,7 @@ function game:endround()
 			vars.missioncomplete = true
 			updatecheevos(vars.mission == 50 and true or false)
 			pd.datastore.write(save)
+			achievements.save()
 			pd.timer.performAfterDelay(1500, function()
 				if vars.mission ~= nil and vars.mission > 50 then
 					scenemanager:transitionscene(missions, true)

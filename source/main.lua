@@ -170,7 +170,6 @@ function updatecheevos(mission50)
 	if mission50 then achievements.grant('mission50') end
 	if save.lastdaily ~= nil and (save.lastdaily.score ~= nil and save.lastdaily.score > 0) then achievements.grant('daily') end
 	if save.exported_mission then achievements.grant('missioncommand') end
-	achievements.save()
 end
 
 updatecheevos()
@@ -194,6 +193,7 @@ end
 -- When the game closes...
 function pd.gameWillTerminate()
     pd.datastore.write(save)
+	achievements.save()
 end
 
 function pauseimage(mode)
@@ -291,6 +291,7 @@ end
 
 function pd.deviceWillSleep()
     pd.datastore.write(save)
+	achievements.save()
 end
 
 -- Setting up music
@@ -461,4 +462,5 @@ function pd.update()
     gfx.sprite.update()
     pd.timer.updateTimers()
 	save.playtime += 1
+	pd.drawFPS(10, 10)
 end
