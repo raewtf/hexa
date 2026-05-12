@@ -462,5 +462,4 @@ function pd.update()
     gfx.sprite.update()
     pd.timer.updateTimers()
 	save.playtime += 1
-	pd.drawFPS(10, 10)
 end
